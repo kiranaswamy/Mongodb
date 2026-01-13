@@ -1,21 +1,28 @@
 const getdb = require('../util/dbConnection').getdb;
 const mongodb = require('mongodb');  
 
-class User {
-  constructor(name,age,email) {
-    this.name = name;
-    this.age= age;
-    this.email = email
+class Product {
+  constructor(title, price, description, imageUrl,userId) {
+    this.title = title;
+    this.price = price;
+    this.description = description;
+    this.imageUrl = imageUrl;
+    this.userId = userId
   }
 
   save() {
     const db = getdb();
-    return db.collection('user').insertOne(this);
+    return db.collection('products').insertOne(this);
   }
 
   static fetchAll() {
     const db = getdb();
-    return db.collection('user').find().toArray();
+    return db.collection('products').find().toArray();
+  }
+
+    static fetchByUserId(userId) {
+    const db = getdb();
+    return db.collection('products').find({ userId }).toArray();
   }
 
 static updateById(id, updatedData) {
@@ -28,7 +35,7 @@ static updateById(id, updatedData) {
     // If conversion fails, fallback to string match
     filter = { _id: id };
   }
-  return db.collection('user').updateOne(
+  return db.collection('products').updateOne(
     filter,
     { $set: updatedData }
   );
@@ -44,9 +51,9 @@ static deleteById(id){
     // If conversion fails, fallback to string match
     filter = { _id: id };
   }
-  return db.collection('user').deleteOne(filter);
+  return db.collection('products').deleteOne(filter);
 }
 
 }
 
-module.exports = User;
+module.exports = Product;

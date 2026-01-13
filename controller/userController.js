@@ -1,97 +1,60 @@
-// const db = require('../util/dbConnection');
-// const User = require('../module/userModule')
-
-// const addValuse =async (req,res)=>{
-//     try{
-//         const {name} = req.body;
-//         const user = await User.create({
-//             name:name
-//         });
-//         res.status(201).send(`User name ${name} is added`)
-//     }catch(erre){
-//         res.status(500).send('Unable to add the user')
-//     }
-// }
-// const updateValuse =async (req,res)=>{
-//     try{
-//         const {id} = req.params;
-//         const {name} = req.body;
-//         const user = await User.findByPk(id);
-//         if(!user){
-//             res.status(404).send('User not found')
-//         }
-//         user.name = name;
-//         await user.save();
-//         res.status(201).send(`User name ${name} is updated`)
-//     }catch(erre){
-//         res.status(500).send('Unable to update the user')
-//     }
-// }
-// const deleteValuse =async (req,res)=>{
-//     try{
-//         const {id} = req.params;
-//         const user = await User.destroy({
-//             where:{
-//                 id:id
-//             }
-//         })
-//         if(!user){
-//             res.status(404).send('User not found')
-//         }
-        
-//         res.status(201).send(`User name  is deleted`)
-//     }catch(erre){
-//         res.status(500).send('Unable to delete the user')
-//     }
-// }
-   
-// module.exports = {addValuse,updateValuse,deleteValuse}
-
-
-
-
-
-
 const User = require('../module/userModule');
 
-const addValue = async (req, res) => {
-  try {
-    const { name } = req.body;
-    const user = await User.create({ name });
-    res.status(201).json({ message: 'User added', user });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+exports.createUser = (req, res) => {
+  const { name,age,email } = req.body;
+
+  const user = new User(
+   name,
+   age,
+   email
+  );
+
+  user.save()
+    .then(() => {
+      res.status(201).json({ message: 'name created' });
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(500).json({ message: 'Error creating name' });
+    });
 };
 
-const updateValue = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { name } = req.body;
-
-    const user = await User.findById(id);
-    if (!user) return res.status(404).json({ message: 'User not found' });
-
-    user.name = name;
-    await user.save();
-
-    res.json({ message: 'User updated', user });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+exports.getUsers = (req, res) => {
+  User.fetchAll()
+    .then(users => {
+      res.status(200).json(users);
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(500).json({ message: 'Error fetching users' });
+    });
 };
 
-const deleteValue = async (req, res) => {
-  try {
-    const { id } = req.params;
+exports.updateUser = (req,res)=>{
+  const id = req.params.id;
+  const {name,age,email} = req.body;
 
-    const user = await User.findByIdAndDelete(id);
-    if (!user) return res.status(404).json({ message: 'User not found' });
-
-    res.json({ message: 'User deleted' });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+ User.updateById(id, { name,age,email })
+    .then(result => {
+      if(result.matchedCount === 0){
+        return res.status(404).send('User not found');
+      }
+      res.send('User updated');
+    })
+    .catch(err => res.status(500).send(err));
 };
 
-module.exports = { addValue, updateValue, deleteValue };
+exports.deleteUser = (req,res)=>{
+  const id = req.params.id;
+
+User.deleteById(id)
+    .then(result => {
+      if(result.deletedCount === 0){
+        return res.status(404).send('User not found');
+      }
+      res.send('User deleted');
+    })
+    .catch(err => res.status(500).send(err));
+};
+
+

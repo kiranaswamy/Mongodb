@@ -1,31 +1,27 @@
-// const { Sequelize } = require('sequelize');
+const mongodb = require('mongodb');
+const MongoClient = mongodb.MongoClient;
 
-// const sequelize = new Sequelize('app', 'root', 'Kiran@123', {
-//   host: 'localhost',
-//   dialect:'mysql' 
-// });
+let _db;
 
-// (async()=>{
-// try {
-//   await sequelize.authenticate();
-//   console.log('Connection has been established successfully.');
-// } catch (error) {
-//   console.error('Unable to connect to the database:', error);
-// }}
-// )();
-//  module.exports = sequelize
-
-
-
-const mongoose = require('mongoose');
-
-const mongoConnect = async () => {
-  try{
-    await mongoose.connect(process.env.URL)
+const mongoConnect = (callback) => {
+  MongoClient.connect(process.env.URL)
+    .then(client => {
       console.log('Connected');
-  }catch(err){
+      _db = client.db(); 
+      callback();
+    })
+    .catch(err => {
       console.log(err);
-    }
+      throw err;
+    });
 };
 
-module.exports = mongoConnect;
+const getdb = () => {
+  if (_db) {
+    return _db;
+  }
+  throw new Error('No database found');
+};
+
+exports.mongoConnect = mongoConnect;
+exports.getdb = getdb;
